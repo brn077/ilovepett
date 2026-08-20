@@ -295,7 +295,7 @@
   .hero-headline .line2 .word{animation-delay:calc(1.2s + (var(--i,0) * 0.06s));}
   @keyframes wordIn{ to{ opacity:1; transform:translateY(0); } }
 
-  .hero-dogstage{grid-area:dogstage; position:relative; min-height:255px; display:flex; align-items:center; justify-content:center; overflow:visible;}
+  .hero-dogstage{grid-area:dogstage; position:relative; min-height:170px; display:flex; align-items:center; justify-content:center; overflow:visible;}
   @media(min-width:861px){ .hero-dogstage{min-height:440px; grid-row:1 / span 4;} }
 
   /* ---------- Paco: real-photo companion layer (no SVG/CSS-drawn dog) ---------- */
@@ -311,8 +311,8 @@
   .paco-slot.in-view{ opacity:1; }
 
   /* Hero slot — true flex-centering, no magic-number offsets */
-  #pacoHero{ width:66%; max-width:264px; }
-  @media(min-width:390px){ #pacoHero{ width:70%; max-width:289px; } }
+  #pacoHero{ width:56%; max-width:224px; }
+  @media(min-width:390px){ #pacoHero{ width:60%; max-width:249px; } }
   @media(min-width:861px){ #pacoHero{ width:43%; max-width:289px; } }
 
   /* Running-pose trot cycle: 4 frames crossfade for an actual walking/trotting gait in the Offer section */
@@ -347,21 +347,21 @@
   @media(max-width:860px) and (max-height:760px){
     .hero-inner{ gap:10px; padding:12px 20px 72px; }
     .hero-headline{ font-size:clamp(20px,6.2vw,50px); }
-    .hero-dogstage{ min-height:210px; }
-    #pacoHero{ width:63%; max-width:221px; }
+    .hero-dogstage{ min-height:178px; }
+    #pacoHero{ width:53%; max-width:186px; }
   }
   @media(max-width:860px) and (max-height:700px){
     .hero-inner{ gap:8px; padding:10px 20px 68px; }
     .hero-headline{ font-size:clamp(18px,5.6vw,50px); }
-    .hero-dogstage{ min-height:150px; }
+    .hero-dogstage{ min-height:128px; }
     .hero-eyebrow-row{ display:none; }
-    #pacoHero{ width:51%; max-width:162px; }
+    #pacoHero{ width:43%; max-width:136px; }
   }
   @media(max-width:860px) and (max-height:650px){
     .hero-benefit{ display:none; }
-    .hero-dogstage{ min-height:100px; }
+    .hero-dogstage{ min-height:85px; }
     .hero-inner{ padding:8px 20px 60px; gap:6px; }
-    #pacoHero{ width:44%; max-width:136px; }
+    #pacoHero{ width:37%; max-width:114px; }
   }
 
   /* Problem-section slot — mobile: sits in normal flow (never overlaps text); desktop: floats in empty corner space */
@@ -400,7 +400,7 @@
   .burst-spark{position:absolute; z-index:6; width:16px; height:16px; margin-left:-8px; margin-top:-8px; pointer-events:none; will-change:transform, opacity;}
   .burst-spark svg{width:100%; height:100%; display:block;}
 
-  .hero-badge{position:absolute; top:4%; right:0; z-index:4; background:var(--yellow); color:var(--yellow-deep); font-weight:700; font-size:11.5px; padding:7px 12px; border-radius:100px; opacity:0;}
+  .hero-badge{position:absolute; top:-30px; right:4%; z-index:5; background:var(--yellow); color:var(--yellow-deep); font-weight:700; font-size:11px; padding:6px 11px; border-radius:100px; opacity:0; white-space:nowrap;}
   .hero-anim.play .hero-badge{animation:popIn .5s var(--ease) 1.7s forwards;}
 
   .paw-idle{position:absolute; animation:pawDrift 3.8s ease-in-out infinite; animation-delay:1.4s;}
@@ -955,8 +955,8 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
     </div>
 
     <h1 class="hero-headline">
-      <span class="line line1"><span class="word" style="--i:0">O</span> <span class="word" style="--i:1">método</span> <span class="word" style="--i:2">de</span> <span class="word hl" style="--i:3">24h</span></span>
-      <span class="line line2"><span class="word" style="--i:0">sem</span> <span class="word" style="--i:1">brigar,</span> <span class="word" style="--i:2">sem</span> <span class="word hl" style="--i:3">gastar</span> <span class="word" style="--i:4">fortuna.</span></span>
+      <span class="line line1"><span class="word" style="--i:0">Xixi</span> <span class="word" style="--i:1">no</span> <span class="word" style="--i:2">lugar</span> <span class="word hl" style="--i:3">certo</span></span>
+      <span class="line line2"><span class="word" style="--i:0">em</span> <span class="word hl" style="--i:1">24</span> <span class="word" style="--i:2">horas.</span></span>
     </h1>
 
     <div class="hero-dogstage" id="heroDogstage">
@@ -1425,14 +1425,17 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
 (function(){
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Pixel-accurate hero height on mobile: subtract the sticky header's real height (whatever
-     comes before it in the document, e.g. the intro quiz, doesn't matter — once scrolled to,
-     only the sticky header still occupies space above the hero). */
+  /* Pixel-accurate hero height on mobile: subtract whatever real space sits above the hero content —
+     ticker + sticky header + the hero section's own top padding, whatever that total turns out to be.
+     Measuring hero-inner's actual position directly (rather than guessing from the header alone) stays
+     correct even as the ticker/header/padding change. The quiz overlay is position:fixed, so it doesn't
+     affect this measurement even while showing. */
   (function(){
-    var headerEl = document.querySelector('header');
-    if(!headerEl) return;
+    var heroInnerEl = document.getElementById('heroAnim');
+    if(!heroInnerEl) return;
     function syncHeaderOffset(){
-      document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+      var top = heroInnerEl.getBoundingClientRect().top + window.scrollY;
+      document.documentElement.style.setProperty('--header-h', Math.max(0, top) + 'px');
     }
     syncHeaderOffset();
     window.addEventListener('resize', syncHeaderOffset);

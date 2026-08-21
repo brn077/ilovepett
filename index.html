@@ -127,13 +127,15 @@
   /* ---------- Intro quiz gate: fixed full-screen, blocks the page until answered or skipped ---------- */
   html.quiz-locked, html.quiz-locked body{ overflow:hidden; height:100%; }
   .intro-quiz{
-    position:fixed; inset:0; z-index:9990; background:var(--purple-deep); overflow:hidden;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    position:fixed; inset:0; z-index:9990; background:var(--purple-deep);
+    overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
     padding:60px 20px 40px;
     opacity:1; transform:scale(1);
     transition:opacity .55s var(--ease), transform .55s var(--ease), visibility 0s linear 0s;
     visibility:visible;
   }
+  .iq-wrap{ margin:auto 0; } /* keeps content vertically centered when it fits, but lets it scroll when it doesn't */
   .intro-quiz.quiz-exit{
     opacity:0; transform:scale(1.04); pointer-events:none;
     transition:opacity .55s var(--ease), transform .55s var(--ease), visibility 0s linear .55s;
@@ -153,8 +155,16 @@
   .iq-brand svg{width:26px;height:26px;}
   .iq-brand span{font-family:'Baloo 2',sans-serif; font-weight:700; font-size:17px; color:#fff;}
 
-  .iq-progress{height:5px; background:rgba(255,255,255,0.15); border-radius:100px; overflow:hidden; margin-bottom:32px;}
-  .iq-progress-fill{height:100%; width:0%; background:var(--yellow); border-radius:100px; transition:width .5s var(--ease);}
+  .iq-progress{height:6px; background:rgba(255,255,255,0.15); border-radius:100px; overflow:hidden; margin-bottom:32px; position:relative;}
+  .iq-progress-fill{height:100%; width:4%; background:var(--yellow); border-radius:100px; transition:width .6s var(--ease); position:relative; overflow:hidden;}
+  .iq-progress-fill::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.65), transparent);
+    width:60%; transform:translateX(-100%);
+    animation:iqShimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes iqShimmer{ 0%{transform:translateX(-100%);} 100%{transform:translateX(220%);} }
+  @media (prefers-reduced-motion: reduce){ .iq-progress-fill::after{ animation:none; display:none; } }
 
   .iq-steps{position:relative;}
   .iq-step{
@@ -295,7 +305,7 @@
   .hero-headline .line2 .word{animation-delay:calc(1.2s + (var(--i,0) * 0.06s));}
   @keyframes wordIn{ to{ opacity:1; transform:translateY(0); } }
 
-  .hero-dogstage{grid-area:dogstage; position:relative; min-height:255px; display:flex; align-items:center; justify-content:center; overflow:visible;}
+  .hero-dogstage{grid-area:dogstage; position:relative; min-height:170px; display:flex; align-items:center; justify-content:center; overflow:visible;}
   @media(min-width:861px){ .hero-dogstage{min-height:440px; grid-row:1 / span 4;} }
 
   /* ---------- Paco: real-photo companion layer (no SVG/CSS-drawn dog) ---------- */
@@ -311,8 +321,10 @@
   .paco-slot.in-view{ opacity:1; }
 
   /* Hero slot — true flex-centering, no magic-number offsets */
-  #pacoHero{ width:66%; max-width:264px; }
-  @media(min-width:390px){ #pacoHero{ width:70%; max-width:289px; } }
+  /* width is capped both by % and by a height-derived limit (aspect-ratio 560/837 ≈ 0.669) so Paco
+     can never render taller than his reserved dogstage slot and overlap the headline/CTA on phones */
+  #pacoHero{ width:min(40%, 146px, 27vh); max-width:146px; }
+  @media(min-width:390px){ #pacoHero{ width:min(43%, 162px, 27vh); max-width:162px; } }
   @media(min-width:861px){ #pacoHero{ width:43%; max-width:289px; } }
 
   /* Running-pose trot cycle: 4 frames crossfade for an actual walking/trotting gait in the Offer section */
@@ -347,21 +359,21 @@
   @media(max-width:860px) and (max-height:760px){
     .hero-inner{ gap:10px; padding:12px 20px 72px; }
     .hero-headline{ font-size:clamp(20px,6.2vw,50px); }
-    .hero-dogstage{ min-height:210px; }
-    #pacoHero{ width:63%; max-width:221px; }
+    .hero-dogstage{ min-height:178px; }
+    #pacoHero{ width:min(38%, 121px, 26vh); max-width:121px; }
   }
   @media(max-width:860px) and (max-height:700px){
     .hero-inner{ gap:8px; padding:10px 20px 68px; }
     .hero-headline{ font-size:clamp(18px,5.6vw,50px); }
-    .hero-dogstage{ min-height:150px; }
+    .hero-dogstage{ min-height:128px; }
     .hero-eyebrow-row{ display:none; }
-    #pacoHero{ width:51%; max-width:162px; }
+    #pacoHero{ width:min(31%, 89px, 19vh); max-width:89px; }
   }
   @media(max-width:860px) and (max-height:650px){
     .hero-benefit{ display:none; }
-    .hero-dogstage{ min-height:100px; }
+    .hero-dogstage{ min-height:85px; }
     .hero-inner{ padding:8px 20px 60px; gap:6px; }
-    #pacoHero{ width:44%; max-width:136px; }
+    #pacoHero{ width:min(27%, 74px, 13vh); max-width:74px; }
   }
 
   /* Problem-section slot — mobile: sits in normal flow (never overlaps text); desktop: floats in empty corner space */
@@ -400,7 +412,7 @@
   .burst-spark{position:absolute; z-index:6; width:16px; height:16px; margin-left:-8px; margin-top:-8px; pointer-events:none; will-change:transform, opacity;}
   .burst-spark svg{width:100%; height:100%; display:block;}
 
-  .hero-badge{position:absolute; top:4%; right:0; z-index:4; background:var(--yellow); color:var(--yellow-deep); font-weight:700; font-size:11.5px; padding:7px 12px; border-radius:100px; opacity:0;}
+  .hero-badge{position:absolute; top:-30px; right:4%; z-index:5; background:var(--yellow); color:var(--yellow-deep); font-weight:700; font-size:11px; padding:6px 11px; border-radius:100px; opacity:0; white-space:nowrap;}
   .hero-anim.play .hero-badge{animation:popIn .5s var(--ease) 1.7s forwards;}
 
   .paw-idle{position:absolute; animation:pawDrift 3.8s ease-in-out infinite; animation-delay:1.4s;}
@@ -655,6 +667,31 @@
   .sticky-cta .price-now-mini{font-family:'Baloo 2',sans-serif;color:var(--purple);font-weight:800;font-size:20px;}
   .sticky-cta .btn{padding:11px 20px; font-size:14px; animation:none;}
 
+  /* ---------- STRATEGIC ELEMENT: recent-activity social proof toast ----------
+     Classic direct-response device: low-key reassurance that real people are buying right now.
+     Pops in bottom-left, auto-dismisses, never blocks content or the sticky CTA. */
+  .activity-toast{
+    position:fixed; left:14px; bottom:14px; z-index:64;
+    display:flex; align-items:center; gap:10px;
+    background:var(--white); border:1px solid var(--line); border-radius:100px;
+    padding:9px 16px 9px 9px; box-shadow:0 10px 26px rgba(34,17,41,0.16);
+    max-width:min(88vw, 320px);
+    opacity:0; transform:translateY(14px) scale(0.96);
+    transition:opacity .4s var(--ease), transform .4s var(--ease);
+    pointer-events:none;
+  }
+  .activity-toast.show{ opacity:1; transform:translateY(0) scale(1); }
+  @media(max-width:860px){ .activity-toast{ bottom:78px; } } /* clears the sticky CTA bar on mobile */
+  .activity-toast .at-avatar{
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    background:var(--purple-tint); display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+  }
+  .activity-toast .at-text{font-size:12.5px; line-height:1.35; color:var(--ink);}
+  .activity-toast .at-text strong{font-weight:700;}
+  .activity-toast .at-time{display:block; font-size:11px; color:var(--muted); margin-top:1px;}
+  .activity-toast .at-check{width:15px;height:15px;color:var(--green); flex-shrink:0;}
+
   @media(max-width:860px){
     .problem-grid,.benefit-grid,.testi-grid{grid-template-columns:1fr;}
     .guarantee-inner{grid-template-columns:1fr;text-align:center;}
@@ -709,7 +746,6 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
     <div class="iq-steps" id="iqSteps">
 
       <div class="iq-step active anim-in" data-step="1">
-        <div class="iq-eyebrow">Pergunta 1 de 8</div>
         <h2 class="iq-question">Seu cachorro é macho ou fêmea?</h2>
         <div class="iq-options">
           <button class="iq-opt" data-question="sex" data-answer="boy"><span class="iq-emoji">🐕</span>Macho</button>
@@ -718,7 +754,6 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
       </div>
 
       <div class="iq-step" data-step="2">
-        <div class="iq-eyebrow">Pergunta 2 de 8</div>
         <h2 class="iq-question">Qual o nome do seu pet?</h2>
         <div class="iq-input-row">
           <input type="text" class="iq-text-input" id="iqPetName" maxlength="24" placeholder="Digite o nome aqui" autocomplete="off">
@@ -727,7 +762,6 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
       </div>
 
       <div class="iq-step" data-step="3">
-        <div class="iq-eyebrow">Pergunta 3 de 8</div>
         <h2 class="iq-question">Qual a raça do seu cão?</h2>
         <div class="iq-input-row">
           <select class="iq-select" id="iqBreedSelect">
@@ -768,7 +802,6 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
       </div>
 
       <div class="iq-step" data-step="4">
-        <div class="iq-eyebrow">Pergunta 4 de 8</div>
         <h2 class="iq-question">Qual a idade do seu cachorro?</h2>
         <div class="iq-options">
           <button class="iq-opt" data-question="age" data-answer="puppy"><span class="iq-emoji">🐶</span>Filhote (0–6 meses)</button>
@@ -779,7 +812,6 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
       </div>
 
       <div class="iq-step" data-step="5">
-        <div class="iq-eyebrow">Pergunta 5 de 8</div>
         <h2 class="iq-question">Qual é o maior desafio agora?</h2>
         <div class="iq-options iq-col1">
           <button class="iq-opt" data-question="challenge" data-answer="accidents"><span class="iq-emoji">🚽</span>Acidentes dentro de casa</button>
@@ -790,7 +822,6 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
       </div>
 
       <div class="iq-step" data-step="6">
-        <div class="iq-eyebrow">Pergunta 6 de 8</div>
         <h2 class="iq-question">Alguma área do corpo com problema de saúde?</h2>
         <div class="iq-options iq-col1" data-multi="true" id="iqHealthOptions">
           <button class="iq-opt" data-question="health" data-answer="pele"><span class="iq-emoji">🩹</span>Pele / alergias</button>
@@ -803,7 +834,6 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
       </div>
 
       <div class="iq-step" data-step="7">
-        <div class="iq-eyebrow">Pergunta 7 de 8</div>
         <h2 class="iq-question">Quais comandos seu cão já sabe?</h2>
         <div class="iq-options iq-col1" data-multi="true" id="iqCommandsOptions">
           <button class="iq-opt" data-question="commands" data-answer="sentar"><span class="iq-emoji">🐾</span>Sentar</button>
@@ -817,7 +847,6 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
       </div>
 
       <div class="iq-step" data-step="8">
-        <div class="iq-eyebrow">Pergunta 8 de 8</div>
         <h2 class="iq-question">Em quanto tempo você quer ver resultado?</h2>
         <div class="iq-options iq-col1">
           <button class="iq-opt" data-question="urgency" data-answer="week"><span class="iq-emoji">⚡</span>Essa semana</button>
@@ -955,8 +984,8 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
     </div>
 
     <h1 class="hero-headline">
-      <span class="line line1"><span class="word" style="--i:0">O</span> <span class="word" style="--i:1">método</span> <span class="word" style="--i:2">de</span> <span class="word hl" style="--i:3">24h</span></span>
-      <span class="line line2"><span class="word" style="--i:0">sem</span> <span class="word" style="--i:1">brigar,</span> <span class="word" style="--i:2">sem</span> <span class="word hl" style="--i:3">gastar</span> <span class="word" style="--i:4">fortuna.</span></span>
+      <span class="line line1"><span class="word" style="--i:0">Xixi</span> <span class="word" style="--i:1">no</span> <span class="word" style="--i:2">lugar</span> <span class="word hl" style="--i:3">certo</span></span>
+      <span class="line line2"><span class="word" style="--i:0">em</span> <span class="word hl" style="--i:1">24</span> <span class="word" style="--i:2">horas.</span></span>
     </h1>
 
     <div class="hero-dogstage" id="heroDogstage">
@@ -1418,21 +1447,82 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
   <a href="#offer" class="btn btn-primary js-cta">Quero acesso</a>
 </div>
 
+<!--
+  ⚠️ Placeholder, igual ao dos depoimentos: os nomes/cidades abaixo são fictícios e giram por conta
+  própria. Antes de publicar, troque `ACTIVITY_FEED` no script por dados reais (ex.: últimas compras
+  vindas da Cakto/webhook) ou remova o widget se preferir não usar prova social simulada.
+-->
+<div class="activity-toast" id="activityToast" role="status" aria-live="polite">
+  <span class="at-avatar" id="atAvatar">🐶</span>
+  <span class="at-text">
+    <span id="atText"><strong>Camila</strong>, de Fortaleza, garantiu acesso</span>
+    <span class="at-time" id="atTime">há 2 minutos</span>
+  </span>
+  <svg class="at-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6L9 17l-5-5"/></svg>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/Physics2DPlugin.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+<script>
+/* ---------- Recent-activity toast: rotates through a small placeholder feed ---------- */
+(function(){
+  var toast = document.getElementById('activityToast');
+  if(!toast) return;
+  var avatarEl = document.getElementById('atAvatar');
+  var textEl = document.getElementById('atText');
+  var timeEl = document.getElementById('atTime');
+
+  var ACTIVITY_FEED = [
+    { name:'Camila', city:'Fortaleza', emoji:'🐶', time:'há 2 minutos' },
+    { name:'Rodrigo', city:'Juazeiro do Norte', emoji:'🐕', time:'há 5 minutos' },
+    { name:'Beatriz', city:'Recife', emoji:'🦮', time:'há 8 minutos' },
+    { name:'Marcelo', city:'São Paulo', emoji:'🐩', time:'há 1 minuto' },
+    { name:'Ana Paula', city:'Salvador', emoji:'🐶', time:'há 12 minutos' }
+  ];
+
+  var idx = 0;
+  var shown = 0;
+  var maxShows = 4; /* light touch — stops after a few so it never nags */
+  var hideTimer = null;
+
+  function showNext(){
+    if(shown >= maxShows) return;
+    var item = ACTIVITY_FEED[idx % ACTIVITY_FEED.length];
+    idx++;
+    shown++;
+    avatarEl.textContent = item.emoji;
+    textEl.innerHTML = '<strong>' + item.name + '</strong>, de ' + item.city + ', garantiu acesso';
+    timeEl.textContent = item.time;
+    toast.classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function(){
+      toast.classList.remove('show');
+      if(shown < maxShows) setTimeout(showNext, 14000 + Math.random()*6000);
+    }, 4600);
+  }
+
+  /* first appearance a little after the page settles, so it doesn't compete with the hero entrance */
+  setTimeout(showNext, 6500);
+})();
+</script>
+
 <script>
 (function(){
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Pixel-accurate hero height on mobile: subtract the sticky header's real height (whatever
-     comes before it in the document, e.g. the intro quiz, doesn't matter — once scrolled to,
-     only the sticky header still occupies space above the hero). */
+  /* Pixel-accurate hero height on mobile: subtract whatever real space sits above the hero content —
+     ticker + sticky header + the hero section's own top padding, whatever that total turns out to be.
+     Measuring hero-inner's actual position directly (rather than guessing from the header alone) stays
+     correct even as the ticker/header/padding change. The quiz overlay is position:fixed, so it doesn't
+     affect this measurement even while showing. */
   (function(){
-    var headerEl = document.querySelector('header');
-    if(!headerEl) return;
+    var heroInnerEl = document.getElementById('heroAnim');
+    if(!heroInnerEl) return;
     function syncHeaderOffset(){
-      document.documentElement.style.setProperty('--header-h', headerEl.offsetHeight + 'px');
+      var top = heroInnerEl.getBoundingClientRect().top + window.scrollY;
+      document.documentElement.style.setProperty('--header-h', Math.max(0, top) + 'px');
     }
     syncHeaderOffset();
     window.addEventListener('resize', syncHeaderOffset);
@@ -1954,9 +2044,12 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
     /* ---- Hero entrance: gentle fade, scale and settle — suited to a calm, docile pose ---- */
     if(pacoHero){
       if(hasGsap && !reduceMotion){
-        gsap.set(pacoHero, { opacity:0, x:-42, scale:0.92 });
+        /* opacity stays at 1 from frame one — animating opacity on a full-color photo makes it
+           read as "washed out / pale" mid-fade and only "gain color" once it hits 1. Entrance is
+           conveyed purely through position + scale instead, so Paco is in full color immediately. */
+        gsap.set(pacoHero, { opacity:1, x:-42, scale:0.92 });
         gsap.timeline({ delay:0.55 })
-          .to(pacoHero, { opacity:1, x:0, scale:1, duration:0.9, ease:'back.out(1.15)' })
+          .to(pacoHero, { x:0, scale:1, duration:0.7, ease:'back.out(1.4)' })
           .add(function(){
             pacoHero.classList.add('in-view');
             var idleEl = pacoHero.querySelector('.paco-idle');
@@ -2018,25 +2111,27 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
         var idleTween = null;
         var idleEl = slot.querySelector('.paco-idle');
 
+        /* opacity ramps are kept short (0.3s) so the photo never lingers at a "pale" half-visible
+           value — the entrance reads mostly through scale/position instead of a slow color fade */
         ScrollTrigger.create({
           trigger: sectionSelector,
           start: 'top 78%',
           end: 'bottom 20%',
           onEnter: function(){
-            gsap.to(slot, { opacity:1, scale:1, y:0, duration:0.75, ease:'power3.out' });
+            gsap.to(slot, { opacity:1, scale:1, y:0, duration:0.3, ease:'power3.out' });
             slot.classList.add('in-view');
             if(idleEl && !idleTween) idleTween = startIdle(idleEl);
           },
           onLeave: function(){
-            gsap.to(slot, { opacity:0, scale:0.98, y:-8, duration:0.6, ease:'power2.in' });
+            gsap.to(slot, { opacity:0, scale:0.98, y:-8, duration:0.25, ease:'power2.in' });
             slot.classList.remove('in-view');
           },
           onEnterBack: function(){
-            gsap.to(slot, { opacity:1, scale:1, y:0, duration:0.6, ease:'power3.out' });
+            gsap.to(slot, { opacity:1, scale:1, y:0, duration:0.3, ease:'power3.out' });
             slot.classList.add('in-view');
           },
           onLeaveBack: function(){
-            gsap.to(slot, { opacity:0, scale:0.98, y:10, duration:0.5, ease:'power2.in' });
+            gsap.to(slot, { opacity:0, scale:0.98, y:10, duration:0.25, ease:'power2.in' });
             slot.classList.remove('in-view');
           }
         });
@@ -2085,7 +2180,13 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
     });
 
 
-    /* ---- Scroll-velocity inertia: the currently visible Paco lags slightly behind fast scrolls, then settles ---- */
+    /* ---- Scroll-velocity inertia: the currently visible Paco lags slightly behind fast scrolls, then settles ----
+       Rewritten to use gsap.quickTo (one persistent tween per element, continuously re-targeted) instead of
+       spawning a brand-new timeline on every scroll tick. Two independent timelines competing for the same
+       y/rotation on fast or "jerky" mobile scroll was what caused the visible trembling; quickTo interpolates
+       smoothly toward whatever the latest target is, so rapid scroll events no longer fight each other.
+       Raw scroll delta is also smoothed (low-pass filter) so tiny inertial-scroll jitters on mobile don't
+       translate 1:1 into visual shake. */
     var barkEl = document.getElementById('pacoBark');
     var lastBarkTime = 0;
     function maybeBark(){
@@ -2099,25 +2200,48 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
     }
 
     if(hasGsap && !reduceMotion){
+      var quickSetters = new WeakMap();
+      function settersFor(el){
+        var s = quickSetters.get(el);
+        if(!s){
+          s = {
+            y: gsap.quickTo(el, 'y', { duration:0.55, ease:'power3.out' }),
+            rot: gsap.quickTo(el, 'rotation', { duration:0.55, ease:'power3.out' })
+          };
+          quickSetters.set(el, s);
+        }
+        return s;
+      }
+
       var lastY = window.scrollY;
+      var smoothDelta = 0;
       var raf = null;
+      var settleTimer = null;
       window.addEventListener('scroll', function(){
         if(raf) return;
         raf = requestAnimationFrame(function(){
           var nowY = window.scrollY;
-          var delta = nowY - lastY;
+          var rawDelta = nowY - lastY;
           lastY = nowY;
           raf = null;
+          smoothDelta = smoothDelta * 0.65 + rawDelta * 0.35; /* low-pass filter: no more per-frame snapping */
+
           var active = document.querySelector('.paco-slot.in-view');
           if(!active) return;
-          var kick = Math.max(-18, Math.min(18, delta * 0.8));
-          var tilt = Math.max(-4, Math.min(4, delta * 0.18));
-          gsap.timeline({overwrite:'auto'})
-            .to(active, { y:kick, rotation:tilt, duration:0.32, ease:'power2.out' })
-            .to(active, { y:0, rotation:0, duration:0.85, ease:'power2.out' });
+          var kick = Math.max(-12, Math.min(12, smoothDelta * 0.55));
+          var tilt = Math.max(-3, Math.min(3, smoothDelta * 0.12));
+          var setters = settersFor(active);
+          setters.y(kick);
+          setters.rot(tilt);
+
+          clearTimeout(settleTimer);
+          settleTimer = setTimeout(function(){
+            setters.y(0);
+            setters.rot(0);
+          }, 110);
 
           /* a scroll fast enough to give a real kick makes Paco give a little "Woof!" — hero only */
-          if(active === pacoHero && Math.abs(delta) > 22){
+          if(active === pacoHero && Math.abs(smoothDelta) > 22){
             maybeBark();
           }
         });

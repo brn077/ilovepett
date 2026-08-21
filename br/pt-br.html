@@ -726,6 +726,62 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
 /></noscript>
 <!-- End Meta Pixel Code -->
 
+<!-- CAPI relay: envia o mesmo evento pro Worker (servidor), com fbc/fbp, pra melhorar
+     a qualidade de correspondência de eventos no Events Manager -->
+<script>
+(function(){
+  var WORKER_URL = 'https://ilovepett.josebrunoliborio.workers.dev/';
+
+  function getCookie(name){
+    var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+  }
+
+  function getFbc(){
+    var fbc = getCookie('_fbc');
+    if(fbc) return fbc;
+    var params = new URLSearchParams(window.location.search);
+    var fbclid = params.get('fbclid');
+    if(fbclid){
+      return 'fb.1.' + Date.now() + '.' + fbclid;
+    }
+    return null;
+  }
+
+  function getFbp(){
+    return getCookie('_fbp');
+  }
+
+  function uuid(){
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){
+      var r = Math.random()*16|0, v = c === 'x' ? r : (r&0x3|0x8);
+      return v.toString(16);
+    });
+  }
+
+  window.trackConversionEvent = function(eventName){
+    var eventId = uuid();
+
+    if(typeof fbq === 'function'){
+      fbq('track', eventName, {}, { eventID: eventId });
+    }
+
+    fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        event_name: eventName,
+        event_id: eventId,
+        event_source_url: window.location.href,
+        fbc: getFbc(),
+        fbp: getFbp(),
+        user_agent: navigator.userAgent
+      })
+    }).catch(function(err){ console.warn('CAPI relay falhou:', err); });
+  };
+})();
+</script>
+
 </head>
 <body>
 
@@ -1879,7 +1935,7 @@ src="https://www.facebook.com/tr?id=1172473751443153&ev=PageView&noscript=1"
   document.querySelectorAll('.js-cta').forEach(function(btn){
     btn.addEventListener('click', function(){
       btn.classList.remove('clicked'); void btn.offsetWidth; btn.classList.add('clicked');
-      if(typeof fbq === 'function'){ fbq('track', 'Lead'); }
+      if(typeof trackConversionEvent === 'function'){ trackConversionEvent('Lead'); } else if(typeof fbq === 'function'){ fbq('track', 'Lead'); }
     });
   });
 
